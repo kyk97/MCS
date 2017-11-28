@@ -1,10 +1,9 @@
-#include <iostream>
-#include <random>
+#include <stdio.h>
+#include <stdlib.h>
 #include <omp.h>
 #include <assert.h>
 #include <time.h>
 #include <sys/time.h>
-using namespace std;
 
 void random_walk(FILE *f, int a, int b, int x, int N, double p, int P) {
 	struct timeval start, end;
@@ -20,9 +19,10 @@ void random_walk(FILE *f, int a, int b, int x, int N, double p, int P) {
 	#pragma omp parallel for reduction (+: counter)
 	for (int i = 0; i < N; i++) {
 		int X = x;
+		unsigned int s = seed[i];
 		while (X != a && X != b) {
 			counter++;
-			double p1 = (double)rand_r(&seed[i]) / RAND_MAX;
+			double p1 = ((double)rand_r(&s)) / RAND_MAX;
 			if (p1 <= p) {
 				X++;
 			}
@@ -31,25 +31,34 @@ void random_walk(FILE *f, int a, int b, int x, int N, double p, int P) {
 			}
 		}
 		if (X == b) {
+			#pragma omp atomic
 			B++;
 		}
 	}
 	assert(gettimeofday(&end, NULL) == 0);
 	double delta = ((end.tv_sec - start.tv_sec) * 1000000u + end.tv_usec - start.tv_usec) / 1.e6;
-	//fprintf(f, "%f %f %fs %d %d %d %d %f %d \n", double(B) / N, double(counter) / N, delta, a, b, x, N, p, P);
-	fprintf(f, "%fs %d \n", delta, P);
+	double p1 = ((double)B) / N;
+	double mean_time = ((double)counter) / N;
+	fprintf(f, "%f %f %fs %d %d %d %d %f %d \n", p1, mean_time, delta, a, b, x, N, p, P);
+	free(seed);
 }
 
-int main()
-{
-
-	int a, b, x, N, P, counter = 0, B = 0;
-	double p;
-	FILE *f = fopen("stats.txt", "w");
-	a = 0; b = 100; x = 50; p = 0.49; P = 4; N = 100000;
-	for (int P = 1; P < 17; P *= 2) {
-		random_walk(f, a, b, x, N, p, P);
+int main(int argc, char **argv) {
+	if( argc == 7 ) {
+		int a = atoi(argv[1]);
+		int b = atoi(argv[2]);
+		int x = atoi(argv[3]);
+		int N = atoi(argv[4]);
+		double p = atof(argv[5]);
+		int P = atoi(argv[6]);
+		
+		if(a >= b || N == 0 || x < a || x > b || P == 0 || p > 1 || p < 0)
+			return 0;
+		FILE *f = fopen("stats.txt", "w");
+		if (f != NULL) {
+			random_walk(f, a, b, x, N, p, P);
+		}
+		fclose(f);
 	}
-	fclose(f);
 	return 0;
 }
