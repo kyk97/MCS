@@ -123,8 +123,8 @@ int main(int argc, char** argv) {
     srand(time(NULL));
     for(int i = 0; i < n; i++) {
         A[i] = rand() % (200 + 1);
-    pthread_mutex_init(&lock, NULL);
 	}
+    pthread_mutex_init(&lock, NULL);
     count = P;
 
     int *B = (int*)malloc(sizeof(int) * n);
