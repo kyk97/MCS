@@ -18,10 +18,12 @@ void MPI_io(int l, int a, int b, int N, int rank, int size) {
 			seeds[i] = rand();
 		}
 	}
+	
 	MPI_Scatter(seeds, 1, MPI_UNSIGNED, &seed, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 	
     srand(seed);
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) 
+    {
 		int x = rand() % l;
 		int y = rand() % l;
 		int r = rand() % a * b;
