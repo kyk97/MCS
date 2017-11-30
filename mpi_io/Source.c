@@ -76,7 +76,7 @@ int main (int argc, char** argv) {
         end = MPI_Wtime();
         double delta = end - start;
         FILE *f = fopen("stats.txt", "w");
-        fprintf(f, "%d %d %d %d %fs", l, a, b, N, delta);
+        fprintf(f, "%d %d %d %d %f", l, a, b, N, delta);
         fclose(f);
     }
 
